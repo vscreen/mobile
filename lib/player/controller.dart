@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:vscreen_client_core/vscreen_client_core.dart';
 
 class ControllerWidget extends StatelessWidget {
-  final bool _isPlaying;
-  final VoidCallback onPlayToggle;
+  final bool _playing;
+  final _playerBloc = VScreenBloc().player;
 
-  ControllerWidget({isPlaying = false, this.onPlayToggle})
-      : _isPlaying = isPlaying;
+  ControllerWidget({playing = false}) : _playing = playing;
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +23,9 @@ class ControllerWidget extends StatelessWidget {
             FloatingActionButton(
               backgroundColor: Colors.white,
               onPressed: () {
-                onPlayToggle();
+                _playerBloc.dispatch(_playing ? Pause() : Play());
               },
-              child: Icon(_isPlaying ? Icons.play_arrow : Icons.pause,
+              child: Icon(_playing ? Icons.pause : Icons.play_arrow,
                   color: Colors.black, size: 32),
             ),
             FloatingActionButton(

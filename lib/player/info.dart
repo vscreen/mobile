@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
+String truncate(String str, int length) {
+  if (str.length < length) return str;
+  return str.substring(0, length) + "...";
+}
+
 class InfoWidget extends StatelessWidget {
   final ImageProvider<dynamic> _thumbnail;
+  final String _title;
 
-  InfoWidget({thumbnailURL = ""})
-      : _thumbnail = thumbnailURL == ""
+  InfoWidget({title = "", thumbnail = ""})
+      : _title = truncate(title, 30),
+        _thumbnail = thumbnail == ""
             ? AssetImage("assets/placeholders/thumbnail.jpg")
-            : NetworkImage(thumbnailURL);
+            : NetworkImage(thumbnail);
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +55,9 @@ class InfoWidget extends StatelessWidget {
                           image: DecorationImage(
                               fit: BoxFit.cover, image: this._thumbnail)))),
               Text(
-                'Video title will be here',
+                _title,
                 style: TextStyle(
-                    fontWeight: FontWeight.w300,
+                    fontWeight: FontWeight.w400,
                     fontSize: 20,
                     color: Colors.white),
               ),
