@@ -21,6 +21,7 @@ class ConnectionDialogState extends State<ConnectionDialog> {
       content: Form(
         key: _formKey,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             TextFormField(
               controller: _ipController,
@@ -31,19 +32,21 @@ class ConnectionDialogState extends State<ConnectionDialog> {
               controller: _portController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: "Port"),
-            ),
-            RaisedButton(
-              onPressed: () {
-                var url = _ipController.text;
-                var port = int.parse(_portController.text);
-                _connectionBloc.dispatch(Connect(url: url, port: port));
-                Navigator.pop(context);
-              },
-              child: Text("connect"),
             )
           ],
         ),
       ),
+      actions: <Widget>[
+        FlatButton(
+          onPressed: () {
+            var url = _ipController.text;
+            var port = int.parse(_portController.text);
+            _connectionBloc.dispatch(Connect(url: url, port: port));
+            Navigator.pop(context);
+          },
+          child: Text("connect"),
+        )
+      ],
     );
   }
 }
