@@ -36,7 +36,6 @@ class ConnectionDialogState extends State<ConnectionDialog> {
               onPressed: () {
                 var url = _ipController.text;
                 var port = int.parse(_portController.text);
-                print("$url:$port");
                 _connectionBloc.dispatch(Connect(url: url, port: port));
                 Navigator.pop(context);
               },

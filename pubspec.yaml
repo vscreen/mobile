@@ -22,7 +22,7 @@ dependencies:
   vscreen_client_core:
     git:
       url: https://github.com/vscreen/client-core.git
-      ref: 5f9d4ebb8ec0bec096723307d70b31d20ba932ee
+      ref: 470d3f385209e95eb8536e92036397372b02e52b 
   flutter_bloc: ^0.5.0
 
 dev_dependencies:

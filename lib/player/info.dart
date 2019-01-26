@@ -10,9 +10,11 @@ String truncate(String str, int length) {
 class InfoWidget extends StatelessWidget {
   final ImageProvider<dynamic> _thumbnail;
   final String _title;
+  final String _url;
 
   InfoWidget({url = "", title = "", thumbnail = ""})
-      : _title = truncate(title, 30),
+      : _url = url,
+        _title = truncate(title, 30),
         _thumbnail = thumbnail == ""
             ? AssetImage("assets/placeholders/thumbnail.jpg")
             : NetworkImage(thumbnail);
@@ -45,7 +47,7 @@ class InfoWidget extends StatelessWidget {
                   showDialog(
                       context: context, builder: (_) => ConnectionDialog());
                 },
-                child: Text('Connected to ...',
+                child: Text(_url == "" ? "connect" : _url,
                     style: TextStyle(fontWeight: FontWeight.bold)),
               ),
               Center(
