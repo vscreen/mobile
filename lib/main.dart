@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'player/player.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vscreen_client_core/vscreen_client_core.dart';
 
 void main() => runApp(MyApp());

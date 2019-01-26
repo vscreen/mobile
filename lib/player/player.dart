@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'info.dart';
 import 'controller.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:vscreen_client_core/vscreen_client_core.dart' as vscreen;
 
 class PlayerWidget extends StatefulWidget {
@@ -12,8 +13,20 @@ class PlayerWidget extends StatefulWidget {
 }
 
 class _PlayerWidgetState extends State<PlayerWidget> {
+  static const _platform = const MethodChannel('app.channel.shared.data');
   final _connectionBloc = vscreen.VScreenBloc().connection;
   final _playerBloc = vscreen.VScreenBloc().player;
+
+  @override
+  void initState() {
+    super.initState();
+    _platform.setMethodCallHandler((MethodCall call) async {
+      if (call.method == "getSharedURL") {
+        String url = call.arguments as String;
+        _playerBloc.dispatch(vscreen.Add(url));
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
