@@ -30,7 +30,9 @@ class ControllerWidget extends StatelessWidget {
             ),
             FloatingActionButton(
               backgroundColor: Colors.white,
-              onPressed: () {},
+              onPressed: () {
+                _playerBloc.dispatch(Next());
+              },
               child: Icon(Icons.skip_next, color: Colors.black),
               mini: true,
             )
