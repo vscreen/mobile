@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'connection.dart';
 import 'dart:ui';
 
 String truncate(String str, int length) {
@@ -10,7 +11,7 @@ class InfoWidget extends StatelessWidget {
   final ImageProvider<dynamic> _thumbnail;
   final String _title;
 
-  InfoWidget({title = "", thumbnail = ""})
+  InfoWidget({url = "", title = "", thumbnail = ""})
       : _title = truncate(title, 30),
         _thumbnail = thumbnail == ""
             ? AssetImage("assets/placeholders/thumbnail.jpg")
@@ -39,8 +40,14 @@ class InfoWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
-              Text('Connected to ...',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              FlatButton(
+                onPressed: () {
+                  showDialog(
+                      context: context, builder: (_) => ConnectionDialog());
+                },
+                child: Text('Connected to ...',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
               Center(
                   child: Container(
                       width: 280,
