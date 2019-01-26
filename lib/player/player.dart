@@ -17,9 +17,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
   final _connectionBloc = vscreen.VScreenBloc().connection;
   final _playerBloc = vscreen.VScreenBloc().player;
 
-  @override
-  void initState() {
-    super.initState();
+  _PlayerWidgetState() {
     _platform.setMethodCallHandler((MethodCall call) async {
       if (call.method == "getSharedURL") {
         String url = call.arguments as String;
