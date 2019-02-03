@@ -11,26 +11,25 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
 public class MainActivity extends FlutterActivity {
-    private Intent curIntent = null;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         GeneratedPluginRegistrant.registerWith(this);
+        onNewIntent(getIntent());
     }
 
-
     @Override
-    protected void onStart() {
-        super.onStart();
-        if (curIntent == null) return;
+    protected  void onResume() {
+        super.onResume();
+        Intent curIntent = getIntent();
 
         String action = curIntent.getAction();
         String type = curIntent.getType();
 
-        if (Intent.ACTION_SEND.equals(action) && type != null) {
+        if (Intent.ACTION_SEND.equals(action) && type != null && !curIntent.hasExtra("DONE")) {
             if ("text/plain".equals(type)) {
                 handleShareURL(curIntent); // Handle text being sent
+                curIntent.putExtra("DONE", true);
             }
         }
     }
@@ -38,7 +37,7 @@ public class MainActivity extends FlutterActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        curIntent = intent;
+        setIntent(intent);
     }
 
 
