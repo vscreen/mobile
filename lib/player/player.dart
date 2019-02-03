@@ -26,6 +26,51 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     });
   }
 
+  Widget buildControllerButton(
+      IconData icon, double size, VoidCallback onPressed) {
+    double padding = 20;
+    return Container(
+        width: size,
+        height: size,
+        child: new RawMaterialButton(
+          shape: new CircleBorder(),
+          fillColor: Colors.white,
+          elevation: 0.0,
+          child: new Icon(icon, color: Colors.black, size: size - padding),
+          onPressed: onPressed,
+        ));
+  }
+
+  Widget buildController(bool playing) {
+    Widget middleButton;
+    if (playing) {
+      middleButton = buildControllerButton(Icons.pause, 70, () {
+        _playerBloc.dispatch(vscreen.Pause());
+      });
+    } else {
+      middleButton = buildControllerButton(Icons.play_arrow, 70, () {
+        _playerBloc.dispatch(vscreen.Play());
+      });
+    }
+
+    Widget leftButton = buildControllerButton(Icons.stop, 45, () {
+      _playerBloc.dispatch(vscreen.Stop());
+    });
+
+    Widget rightButton = buildControllerButton(Icons.skip_next, 45, () {
+      _playerBloc.dispatch(vscreen.Next());
+    });
+
+    return Container(
+        color: Colors.blueGrey[900],
+        padding: EdgeInsets.symmetric(horizontal: 50.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[leftButton, middleButton, rightButton],
+        ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<vscreen.ConnectionEvent, vscreen.ConnectionState>(
@@ -45,10 +90,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
                             title: playerState.title,
                             thumbnail: playerState.thumbnail)),
                     Expanded(
-                        flex: 1,
-                        child: ControllerWidget(
-                          playing: playerState.playing,
-                        ))
+                        flex: 1, child: buildController(playerState.playing))
                   ],
                 ));
           },
