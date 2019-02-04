@@ -18,22 +18,24 @@ class ConnectionDialogState extends State<ConnectionDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('Connect to'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            TextFormField(
-              controller: _ipController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: "IP address"),
-            ),
-            TextFormField(
-              controller: _portController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: "Port"),
-            )
-          ],
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextFormField(
+                controller: _ipController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: "IP address"),
+              ),
+              TextFormField(
+                controller: _portController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: "Port"),
+              )
+            ],
+          ),
         ),
       ),
       actions: <Widget>[

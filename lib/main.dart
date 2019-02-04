@@ -22,7 +22,8 @@ class MyAppState extends State<MyApp> {
         theme: ThemeData(
           primarySwatch: Colors.blueGrey,
         ),
-        home: PlayerWidget());
+        home:
+            Scaffold(body: PlayerWidget(), resizeToAvoidBottomPadding: false));
   }
 
   @override
