@@ -53,7 +53,7 @@ class ConnectionDialogState extends State<ConnectionDialog> {
             var url = _ipController.text;
             var port = int.parse(_portController.text);
             _vscreen.connect(url, port);
-            Navigator.pop(context);
+            Navigator.of(context).pop();
           },
           child: Text("connect"),
         )

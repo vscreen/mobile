@@ -132,7 +132,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     _vscreen = VScreen.of(context).bloc;
 
     return StreamBuilder<Connection>(
-      stream: _vscreen.connection,
+      stream: _vscreen.connection.where((connection) => connection != null),
       initialData: Connection(url: "", port: 8080),
       builder: (context, snapshot) {
         var connection = snapshot.data;
