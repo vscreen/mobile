@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'connection.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
-import 'package:vscreen_client_core/vscreen_client_core.dart' as vscreen;
+import 'package:vscreen_client_core/vscreen.dart';
+import '../inherited.dart';
 
 class PlayerWidget extends StatefulWidget {
   @override
@@ -14,24 +14,14 @@ class PlayerWidget extends StatefulWidget {
 
 class _PlayerWidgetState extends State<PlayerWidget> {
   static const _platform = const MethodChannel('app.channel.shared.data');
-  final _connectionBloc = vscreen.VScreenBloc().connection;
-  final _playerBloc = vscreen.VScreenBloc().player;
-  final _errorBloc = vscreen.VScreenBloc().error;
+  VScreenBloc _vscreen;
 
   _PlayerWidgetState() {
     _platform.setMethodCallHandler((MethodCall call) async {
       if (call.method == "getSharedURL") {
         String url = call.arguments as String;
-        _playerBloc.dispatch(vscreen.Add(url));
+        _vscreen.add(url);
       }
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _errorBloc.state.listen((state) {
-      Scaffold.of(context).showSnackBar(SnackBar(content: Text(state.reason)));
     });
   }
 
@@ -111,20 +101,20 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     Widget middleButton;
     if (playing) {
       middleButton = buildControllerButton(Icons.pause, 70, () {
-        _playerBloc.dispatch(vscreen.Pause());
+        _vscreen.pause();
       });
     } else {
       middleButton = buildControllerButton(Icons.play_arrow, 70, () {
-        _playerBloc.dispatch(vscreen.Play());
+        _vscreen.play();
       });
     }
 
     Widget leftButton = buildControllerButton(Icons.stop, 45, () {
-      _playerBloc.dispatch(vscreen.Stop());
+      _vscreen.stop();
     });
 
     Widget rightButton = buildControllerButton(Icons.skip_next, 45, () {
-      _playerBloc.dispatch(vscreen.Next());
+      _vscreen.next();
     });
 
     return Container(
@@ -139,26 +129,32 @@ class _PlayerWidgetState extends State<PlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<vscreen.ConnectionEvent, vscreen.ConnectionState>(
-      bloc: _connectionBloc,
-      builder: (_, connectionState) {
-        return BlocBuilder<vscreen.PlayerEvent, vscreen.PlayerState>(
-          bloc: _playerBloc,
-          builder: (_, playerState) {
-            return Scaffold(
-                backgroundColor: Colors.white,
-                body: Column(
-                  children: <Widget>[
-                    Expanded(
-                        flex: 5,
-                        child: buildInfo(connectionState.url, playerState.title,
-                            playerState.thumbnail)),
-                    Expanded(
-                        flex: 1, child: buildController(playerState.playing))
-                  ],
-                ));
-          },
-        );
+    _vscreen = VScreen.of(context).bloc;
+
+    return StreamBuilder<Connection>(
+      stream: _vscreen.connection,
+      initialData: Connection(url: "", port: 8080),
+      builder: (context, snapshot) {
+        var connection = snapshot.data;
+
+        return StreamBuilder<PlayerInfo>(
+            stream: _vscreen.info,
+            initialData: PlayerInfo(),
+            builder: (context, snapshot) {
+              var info = snapshot.data;
+
+              return Scaffold(
+                  backgroundColor: Colors.white,
+                  body: Column(
+                    children: <Widget>[
+                      Expanded(
+                          flex: 5,
+                          child: buildInfo(
+                              connection.url, info.title, info.thumbnail)),
+                      Expanded(flex: 1, child: buildController(info.playing))
+                    ],
+                  ));
+            });
       },
     );
   }

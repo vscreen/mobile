@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vscreen_client_core/vscreen_client_core.dart';
+import 'package:vscreen_client_core/vscreen.dart';
+import '../inherited.dart';
 
 class ConnectionDialog extends StatefulWidget {
   @override
@@ -9,13 +10,15 @@ class ConnectionDialog extends StatefulWidget {
 }
 
 class ConnectionDialogState extends State<ConnectionDialog> {
-  final _connectionBloc = VScreenBloc().connection;
   final _formKey = GlobalKey<FormState>();
   final _ipController = TextEditingController();
   final _portController = TextEditingController();
+  VScreenBloc _vscreen;
 
   @override
   Widget build(BuildContext context) {
+    _vscreen = VScreen.of(context).bloc;
+
     return AlertDialog(
       title: Text('Connect to'),
       content: SingleChildScrollView(
@@ -41,9 +44,15 @@ class ConnectionDialogState extends State<ConnectionDialog> {
       actions: <Widget>[
         FlatButton(
           onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text("cancel"),
+        ),
+        FlatButton(
+          onPressed: () {
             var url = _ipController.text;
             var port = int.parse(_portController.text);
-            _connectionBloc.dispatch(Connect(url: url, port: port));
+            _vscreen.connect(url, port);
             Navigator.pop(context);
           },
           child: Text("connect"),
