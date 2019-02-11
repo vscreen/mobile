@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'dart:async';
+import 'package:async/async.dart';
 import 'connection.dart';
 import 'package:flutter/services.dart';
 import 'package:vscreen_client_core/vscreen.dart';
@@ -12,17 +14,50 @@ class PlayerWidget extends StatefulWidget {
   }
 }
 
-class _PlayerWidgetState extends State<PlayerWidget> {
-  static const _platform = const MethodChannel('app.channel.shared.data');
+class _PlayerWidgetState extends State<PlayerWidget>
+    with WidgetsBindingObserver {
   VScreenBloc _vscreen;
 
+  final _newURL = StreamController<String>();
+  StreamQueue<String> get _newURLQueue => StreamQueue<String>(_newURL.stream);
+
   _PlayerWidgetState() {
+    const _platform = const MethodChannel('app.channel.shared.data');
     _platform.setMethodCallHandler((MethodCall call) async {
       if (call.method == "getSharedURL") {
         String url = call.arguments as String;
-        _vscreen.add(url);
+        _newURL.add(url);
       }
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state.index) {
+      case 0: // resumed
+        _vscreen.reconnect().then((v) {
+          _newURLQueue.hasNext.then((hasNext) {
+            if (hasNext)
+              _newURLQueue.next.then((newURL) => _vscreen.add(newURL));
+          });
+        });
+        break;
+      case 2: // paused
+        _vscreen.disconnect();
+        break;
+    }
   }
 
   Widget buildInfo(String url, String title, String thumbnail) {
@@ -132,10 +167,10 @@ class _PlayerWidgetState extends State<PlayerWidget> {
     _vscreen = VScreen.of(context).bloc;
 
     return StreamBuilder<Connection>(
-      stream: _vscreen.connection.where((connection) => connection != null),
+      stream: _vscreen.connection,
       initialData: Connection(url: "", port: 8080),
       builder: (context, snapshot) {
-        var connection = snapshot.data;
+        var url = snapshot == null ? "" : snapshot.data.url;
 
         return StreamBuilder<PlayerInfo>(
             stream: _vscreen.info,
@@ -149,8 +184,7 @@ class _PlayerWidgetState extends State<PlayerWidget> {
                     children: <Widget>[
                       Expanded(
                           flex: 5,
-                          child: buildInfo(
-                              connection.url, info.title, info.thumbnail)),
+                          child: buildInfo(url, info.title, info.thumbnail)),
                       Expanded(flex: 1, child: buildController(info.playing))
                     ],
                   ));
