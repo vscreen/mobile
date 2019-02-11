@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'dart:async';
-import 'package:async/async.dart';
-import 'connection.dart';
+import './connection.dart';
 import 'package:flutter/services.dart';
-import 'package:vscreen_client_core/vscreen.dart';
+import 'package:vscreen_client_core/vscreen.dart' as v;
 import '../inherited.dart';
 
 class PlayerWidget extends StatefulWidget {
@@ -16,17 +14,14 @@ class PlayerWidget extends StatefulWidget {
 
 class _PlayerWidgetState extends State<PlayerWidget>
     with WidgetsBindingObserver {
-  VScreenBloc _vscreen;
-
-  final _newURL = StreamController<String>();
-  StreamQueue<String> get _newURLQueue => StreamQueue<String>(_newURL.stream);
+  v.VScreenBloc _vscreen;
 
   _PlayerWidgetState() {
     const _platform = const MethodChannel('app.channel.shared.data');
     _platform.setMethodCallHandler((MethodCall call) async {
       if (call.method == "getSharedURL") {
         String url = call.arguments as String;
-        _newURL.add(url);
+        _vscreen.add(url);
       }
     });
   }
@@ -44,18 +39,18 @@ class _PlayerWidgetState extends State<PlayerWidget>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    switch (state.index) {
-      case 0: // resumed
-        _vscreen.reconnect().then((v) {
-          _newURLQueue.hasNext.then((hasNext) {
-            if (hasNext)
-              _newURLQueue.next.then((newURL) => _vscreen.add(newURL));
-          });
-        });
+  Future<Null> didChangeAppLifecycleState(AppLifecycleState state) async {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        print("on resumed");
+        await _vscreen.reconnect();
         break;
-      case 2: // paused
-        _vscreen.disconnect();
+      case AppLifecycleState.paused:
+        print("on paused");
+        await _vscreen.disconnect();
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.suspending:
         break;
     }
   }
@@ -166,30 +161,36 @@ class _PlayerWidgetState extends State<PlayerWidget>
   Widget build(BuildContext context) {
     _vscreen = VScreen.of(context).bloc;
 
-    return StreamBuilder<Connection>(
-      stream: _vscreen.connection,
-      initialData: Connection(url: "", port: 8080),
-      builder: (context, snapshot) {
-        var url = snapshot == null ? "" : snapshot.data.url;
+    return StreamBuilder<v.ConnectionState>(
+        stream: _vscreen.connection.where((state) => !(state is v.Connecting)),
+        initialData: v.Disconnected(),
+        builder: (context, snapshot) {
+          var url = "";
+          if (snapshot.hasError) {
+          } else {
+            var state = snapshot.data;
+            if (state is v.Connected) {
+              url = state.url;
+            }
+          }
 
-        return StreamBuilder<PlayerInfo>(
-            stream: _vscreen.info,
-            initialData: PlayerInfo(),
-            builder: (context, snapshot) {
-              var info = snapshot.data;
+          return StreamBuilder<v.PlayerState>(
+              stream: _vscreen.player,
+              initialData: v.NewPlayerInfo(),
+              builder: (context, snapshot) {
+                var info = snapshot.data as v.NewPlayerInfo;
 
-              return Scaffold(
-                  backgroundColor: Colors.white,
-                  body: Column(
-                    children: <Widget>[
-                      Expanded(
-                          flex: 5,
-                          child: buildInfo(url, info.title, info.thumbnail)),
-                      Expanded(flex: 1, child: buildController(info.playing))
-                    ],
-                  ));
-            });
-      },
-    );
+                return Scaffold(
+                    backgroundColor: Colors.white,
+                    body: Column(
+                      children: <Widget>[
+                        Expanded(
+                            flex: 5,
+                            child: buildInfo(url, info.title, info.thumbnail)),
+                        Expanded(flex: 1, child: buildController(info.playing))
+                      ],
+                    ));
+              });
+        });
   }
 }
