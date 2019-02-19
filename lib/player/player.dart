@@ -187,6 +187,16 @@ class _PlayerWidgetState extends State<PlayerWidget>
                         Expanded(
                             flex: 5,
                             child: buildInfo(url, info.title, info.thumbnail)),
+                        Slider(
+                          value: info.position,
+                          onChanged: (_) {},
+                          onChangeEnd: (value) {
+                            print(value);
+                            _vscreen.seek(value);
+                          },
+                          min: 0.0,
+                          max: 1.0,
+                        ),
                         Expanded(flex: 1, child: buildController(info.playing))
                       ],
                     ));
