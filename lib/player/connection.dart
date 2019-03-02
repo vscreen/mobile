@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vscreen_client_core/vscreen.dart' as v;
+import 'dart:async';
 import '../inherited.dart';
 
 class ConnectionDialog extends StatefulWidget {
@@ -10,60 +11,15 @@ class ConnectionDialog extends StatefulWidget {
 }
 
 class ConnectionDialogState extends State<ConnectionDialog> {
-  final _formKey = GlobalKey<FormState>();
-  final _ipController = TextEditingController();
-  final _portController = TextEditingController();
   v.VScreenBloc _vscreen;
 
-  Widget _buildForm({String error}) {
-    _portController.text = "8080";
+  void initState() {
+    super.initState();
 
-    var rows = <Widget>[];
-    if (error != null) {
-      rows.add(Text(error, style: TextStyle(color: Colors.red)));
-    }
-
-    rows.addAll([
-      TextFormField(
-        controller: _ipController,
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(labelText: "IP address"),
-      ),
-      TextFormField(
-        controller: _portController,
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(labelText: "Port"),
-      )
-    ]);
-
-    return AlertDialog(
-      title: Text('Connect to'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: rows,
-          ),
-        ),
-      ),
-      actions: <Widget>[
-        FlatButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: Text("cancel"),
-        ),
-        FlatButton(
-          onPressed: () {
-            var url = _ipController.text;
-            var port = int.parse(_portController.text);
-            _vscreen.connect(url, port);
-          },
-          child: Text("connect"),
-        )
-      ],
-    );
+    Future.delayed(Duration.zero, () {
+      print("Discovering");
+      VScreen.of(context).bloc.startDiscovering();
+    });
   }
 
   @override
@@ -81,18 +37,28 @@ class ConnectionDialogState extends State<ConnectionDialog> {
               return AlertDialog(content: Text("connected"));
             }
 
-            if (state is v.Connecting) {
-              return Center(
-                  child: SizedBox(
-                width: 50,
-                height: 50,
-                child: CircularProgressIndicator(),
-              ));
+            if (state is v.Discovered) {
+              return AlertDialog(
+                content: ListView(
+                  children: state.services.map((connection) {
+                    return ListTile(
+                      title: Text(connection.host),
+                      onTap: () {
+                        _vscreen.connect(connection.host, connection.port);
+                      },
+                    );
+                  }).toList(),
+                ),
+              );
             }
           }
 
-          return _buildForm(
-              error: snapshot.hasError ? snapshot.error.toString() : null);
+          return Center(
+              child: SizedBox(
+            width: 50,
+            height: 50,
+            child: CircularProgressIndicator(),
+          ));
         });
   }
 }

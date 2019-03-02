@@ -4,6 +4,7 @@ import './connection.dart';
 import 'package:flutter/services.dart';
 import 'package:vscreen_client_core/vscreen.dart' as v;
 import '../inherited.dart';
+import 'dart:async';
 
 class PlayerWidget extends StatefulWidget {
   @override
